@@ -20,6 +20,7 @@ const page = () => {
     async function setupCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        console.log("Tracks:", stream.getTracks());
         if (refVideo.current) {
           refVideo.current.srcObject = stream;
         }
@@ -53,7 +54,7 @@ const page = () => {
     setupCamera();
   }, []);
 
-  const startRecording = () => {
+  const startRecording = async () => {
     try {
       if (!refCanvas.current) return;
 
@@ -65,7 +66,14 @@ const page = () => {
         return;
       }
 
-      refMediaRecorder.current = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+      const audioStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      const audioTrack = audioStream.getTracks()[0];
+
+      if (audioTrack) {
+        stream.addTrack(audioTrack);
+      }
+
+      refMediaRecorder.current = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9,opus" });
 
       refMediaRecorder.current.ondataavailable = (event) => {
         if (event.data.size > 0) refChunks.current.push(event.data);
