@@ -12,6 +12,7 @@ const page = () => {
   const refVideo = useRef<HTMLVideoElement>(null);
   const refMediaRecorder = useRef<MediaRecorder | null>(null);
   const refChunks = useRef<Blob[]>([]);
+  const refCanvas = useRef<HTMLCanvasElement>(null);
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
   const [recording, setRecording] = useState<boolean>(false);
 
@@ -22,6 +23,29 @@ const page = () => {
         if (refVideo.current) {
           refVideo.current.srcObject = stream;
         }
+
+        const ctx = refCanvas.current?.getContext("2d");
+        const logo = new Image();
+        logo.src = "/logo.png"; // 👈 Your company logo path
+        logo.onload = () => {
+          const drawFrame = () => {
+            if (ctx && refVideo.current) {
+              // Draw camera feed
+              ctx.drawImage(refVideo.current, 0, 0, refCanvas.current!.width, refCanvas.current!.height);
+
+
+              ctx.globalAlpha = 0.08;
+              const logoWidth = 400;
+              const logoHeight = 160;
+              const x = (refCanvas.current!.width - logoWidth) / 2;
+              const y = (refCanvas.current!.height - logoHeight) / 2;
+              ctx.drawImage(logo, x, y, logoWidth, logoHeight);
+              ctx.globalAlpha = 1.0;
+            }
+            requestAnimationFrame(drawFrame);
+          };
+          drawFrame();
+        };
       } catch (err) {
         console.error("Error accessing camera: ", err)
       }
@@ -31,14 +55,15 @@ const page = () => {
 
   const startRecording = () => {
     try {
-      const stream = refVideo.current?.srcObject as MediaStream | null;
+      if (!refCanvas.current) return;
+
+      refChunks.current = []
+      const stream = refCanvas.current.captureStream(30);
 
       if (!stream) {
         console.warn("No media stream found — cannot start recording.");
         return;
       }
-
-      refChunks.current = []
 
       refMediaRecorder.current = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
 
@@ -80,7 +105,8 @@ const page = () => {
     <div className="w-full h-[100vh] flex flex-col items-center gap-10 p-6 bg-cyan-100">
       <h1 className="text-2xl font-bold">Camera Recorder</h1>
 
-      <video ref={refVideo} autoPlay playsInline className="w-[50vw] h-[50vh]" />
+      <video ref={refVideo} autoPlay playsInline muted className="w-[50vw] h-[50vh]" />
+      <canvas className='hidden' ref={refCanvas} width={640} height={480} style={{ border: "1px solid black" }} />
 
       <div className="flex gap-4">
         {!recording ? (
