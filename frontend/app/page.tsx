@@ -8,6 +8,10 @@ const RecorderState = {
   PAUSED: "paused"
 } as const;
 
+const VIDEO_BITRATE = parseInt(process.env.NEXT_PUBLIC_VIDEO_BITRATE || "3750000", 10);
+const AUDIO_BITRATE = parseInt(process.env.NEXT_PUBLIC_AUDIO_BITRATE || "128000", 10);
+const FRAME_RATE = parseInt(process.env.NEXT_PUBLIC_FRAME_RATE || "30", 10);
+
 const page = () => {
   const refVideo = useRef<HTMLVideoElement>(null);
   const refMediaRecorder = useRef<MediaRecorder | null>(null);
@@ -59,7 +63,7 @@ const page = () => {
       if (!refCanvas.current) return;
 
       refChunks.current = []
-      const stream = refCanvas.current.captureStream(30);
+      const stream = refCanvas.current.captureStream(FRAME_RATE);
 
       if (!stream) {
         console.warn("No media stream found — cannot start recording.");
@@ -73,7 +77,14 @@ const page = () => {
         stream.addTrack(audioTrack);
       }
 
-      refMediaRecorder.current = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9,opus" });
+      refMediaRecorder.current = new MediaRecorder(
+        stream,
+        {
+          mimeType: "video/webm;codecs=vp9,opus",
+          videoBitsPerSecond: VIDEO_BITRATE,
+          audioBitsPerSecond: AUDIO_BITRATE
+        }
+      );
 
       refMediaRecorder.current.ondataavailable = (event) => {
         if (event.data.size > 0) refChunks.current.push(event.data);
