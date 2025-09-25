@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react'
+import { formatDateTimeUTC } from './utils/datetime';
 
 const RecorderState = {
   INACTIVE: "inactive",
@@ -35,17 +36,37 @@ const page = () => {
         logo.onload = () => {
           const drawFrame = () => {
             if (ctx && refVideo.current) {
-              // Draw camera feed
-              ctx.drawImage(refVideo.current, 0, 0, refCanvas.current!.width, refCanvas.current!.height);
+              const canvas = refCanvas.current!;
+              ctx.drawImage(refVideo.current, 0, 0, canvas.width, canvas.height);
 
-
+              ctx.save();
               ctx.globalAlpha = 0.08;
               const logoWidth = 400;
               const logoHeight = 160;
-              const x = (refCanvas.current!.width - logoWidth) / 2;
-              const y = (refCanvas.current!.height - logoHeight) / 2;
-              ctx.drawImage(logo, x, y, logoWidth, logoHeight);
-              ctx.globalAlpha = 1.0;
+              const x1 = (canvas.width - logoWidth) / 2;
+              const y1 = (canvas.height - logoHeight) / 2;
+              ctx.drawImage(logo, x1, y1, logoWidth, logoHeight);
+              ctx.restore();
+
+              ctx.save();
+              const padding = 10;
+              const fontSize = 14;
+              ctx.font = `bold ${fontSize}px sans-serif`;
+              ctx.textAlign = "right";
+              ctx.textBaseline = "top";
+
+              ctx.globalAlpha = 0.45;
+              ctx.fillStyle = "rgba(255, 255, 255, 1)";
+              ctx.shadowColor = "rgba(0,0,0,0.6)";
+              ctx.shadowOffsetX = 1;
+              ctx.shadowOffsetY = 1;
+              ctx.shadowBlur = 2;
+
+              const x2 = (canvas.width / (window.devicePixelRatio || 1)) - padding;
+              const y2 = padding;
+              ctx.fillText(formatDateTimeUTC(), x2, y2);
+
+              ctx.restore();
             }
             requestAnimationFrame(drawFrame);
           };
