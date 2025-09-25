@@ -32,6 +32,7 @@ import java.util.Objects;
 @Slf4j
 public class UtilityController {
     public static final String CONTENT_RANGE_FORMAT = "bytes %d-%d/%d";
+    public static final String RECORDING_PREFIX = "streaming/";
     private final S3Client s3Client;
 
     @Value("${config.aws.bucket-name}")
@@ -47,7 +48,7 @@ public class UtilityController {
             @RequestHeader(value = "Range", required = false) String rangeHeader
     ) {
         HeadObjectResponse metadata = s3Client.headObject(
-                HeadObjectRequest.builder().bucket(bucketName).key(fileName).build()
+                HeadObjectRequest.builder().bucket(bucketName).key(RECORDING_PREFIX + fileName).build()
         );
         long fileSize = metadata.contentLength();
 
@@ -75,7 +76,7 @@ public class UtilityController {
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(fileName)
+                .key(RECORDING_PREFIX + fileName)
                 .range(BYTES + rangeStart + "-" + rangeEnd)
                 .build();
 
