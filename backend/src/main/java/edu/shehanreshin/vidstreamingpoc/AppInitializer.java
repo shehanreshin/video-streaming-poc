@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class VidstreamingpocApplication {
+public class AppInitializer {
 
 	public static void main(String[] args) {
-		SpringApplication.run(VidstreamingpocApplication.class, args);
+		SpringApplication.run(AppInitializer.class, args);
 	}
 
 }
