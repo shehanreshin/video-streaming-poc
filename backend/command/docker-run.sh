@@ -3,6 +3,11 @@ if [ ! -d "$(pwd)/command/config" ]; then
   exit 1
 fi
 
+if [ "$(docker ps -aq -f name=^videostreamingpoc$)" ]; then
+  echo "Removing existing container: videostreamingpoc"
+  docker rm -f videostreamingpoc
+fi
+
 docker run -d --rm \
   --name videostreamingpoc \
   -v "$(pwd)/command/config:/config:ro" \
