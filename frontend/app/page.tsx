@@ -30,15 +30,17 @@ const page = () => {
           refVideo.current.srcObject = stream;
         }
 
-        const ctx = refCanvas.current?.getContext("2d");
         const logo = new Image();
         logo.src = "/logo.png"; // 👈 Your company logo path
         logo.onload = () => {
-          const drawFrame = () => {
+          const canvas = refCanvas.current!;
+          const ctx = refCanvas.current?.getContext("2d");
+
+          setInterval(() => {
             if (ctx && refVideo.current) {
-              const canvas = refCanvas.current!;
               ctx.drawImage(refVideo.current, 0, 0, canvas.width, canvas.height);
 
+              // ✅ Logo overlay
               ctx.save();
               ctx.globalAlpha = 0.08;
               const logoWidth = 400;
@@ -48,13 +50,13 @@ const page = () => {
               ctx.drawImage(logo, x1, y1, logoWidth, logoHeight);
               ctx.restore();
 
+              // ✅ Timestamp overlay
               ctx.save();
               const padding = 10;
               const fontSize = 14;
               ctx.font = `bold ${fontSize}px sans-serif`;
               ctx.textAlign = "right";
               ctx.textBaseline = "top";
-
               ctx.globalAlpha = 0.45;
               ctx.fillStyle = "rgba(255, 255, 255, 1)";
               ctx.shadowColor = "rgba(0,0,0,0.6)";
@@ -65,12 +67,9 @@ const page = () => {
               const x2 = (canvas.width / (window.devicePixelRatio || 1)) - padding;
               const y2 = padding;
               ctx.fillText(formatDateTimeUTC(), x2, y2);
-
               ctx.restore();
             }
-            requestAnimationFrame(drawFrame);
-          };
-          drawFrame();
+          }, 1000 / FRAME_RATE);
         };
       } catch (err) {
         console.error("Error accessing camera: ", err)
